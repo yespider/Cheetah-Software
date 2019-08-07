@@ -24,3 +24,5 @@ algorithms/machine_learning/python_bridge/pycheetah.py
 algorithms/machine_learning/bridge_lcm_types/cpp/*
 documentation/doxygen/latex
 documentation/doxygen/html
+
+iDoxy/
