@@ -1,9 +1,9 @@
 # Getting Started
-This page explains how to download and install the software, run the MIT Controller, and how to create a controller of your own.
+本页说明本软件的下载安装、如何运行MIT Controller、如果创建用户自己的Controller。
 
 # Install dependencies
 
-Packages:
+依赖包:
 ```
 sudo apt install mesa-common-dev freeglut3-dev coinor-libipopt-dev libblas-dev liblapack-dev gfortran liblapack-dev coinor-libipopt-dev cmake gcc build-essential libglib2.0-dev
 ```
@@ -19,7 +19,7 @@ sudo apt install libqt5 libqt5gamepad5
 ```
 
 
-# Download and build code
+# 下载及构建代码
 
 ```
 git clone https://github.com/mit-biomimetics/Cheetah-Software.git
@@ -34,39 +34,42 @@ make -j
 ```
 
 
-# Test
-The code in the `common` folder has some tests.  From the build folder, these can be run with `common/test-common`.   There are two tests which commonly fail:
+# 测试
 
-- OSQP - the solver itself is nondeterministic, so just run the test again and it should pass
-- CASADI - the solver loads a library at runtime and sometimes has issues finding it.  It's fine if this fails as we aren't using this solver yet.
+在 `common` 目录下有些测试代码。在build目录下, 可以运行 `common/test-common`。这里有两个测试一般会失败:
 
-# Joystick
-We use the Logitech F310 controller.  There's a switch in the back, which should be in the "X" position.  The controller needs to reconnected if you change the switch position.  Also, the LED on the front near the mode button should be off.
+- OSQP - 这个solver本身存在不确定性，重试下应该会正常
+- CASADI - 这个solver运行时加载了一个库，有时会在寻找它是报错，不过没关系，因为我们并没有用到这个Solver。
+
+# 手柄控制器
+我们使用罗技 F310 手柄控制器，它的背面有一个开关，这开关应该在“X”位置。如果切换了这个开关，手柄需要重新连接。手柄正面靠近模式切换按钮的LED灯需要是熄灭的。
 (https://www.amazon.com/Logitech-940-000110-Gamepad-F310/dp/B003VAHYQY)
 
 
-# Simulation Example
-The simulator default settings can be configured with `config/simulator-defaults.yaml` and `config/default-terrain.yaml`.  The default settings should be good for most uses, and the `default-terrain` file has commented out examples of how to add a mesh, box, and stairs.  The friction of the floor can be set from within the terrain file.
+# 仿真示例
+仿真器默认配置在`config/simulator-defaults.yaml` 和 `config/default-terrain.yaml`。默认配置在大多数情况都是正常的。 `default-terrain` 文件已经注释举例了如何去增加mesh、box和stairs，此文件也可以配置地面摩擦力。
 
-To launch the simulator, first plug in your joystick, then run `sim/sim` from within the `build` folder.    Select "Mini Cheetah" and "Simulator", then click "Start".  Somewhere in the output, you should see
+运行仿真器前，先插入手柄，然后在 `build` 目录下运行`sim/sim` 选择 "Mini Cheetah" 和 "Simulator"，然后点击 "Start"。  你应该将看到以下输出信息：
 
 ```
 [GameController] Found 1 joystick
 ```
-The left panel allows you to change simulator settings.  The most useful setting is `simulation_speed`.  Defaults are loaded `simulator-defaults.yaml` when the simulator opens.  The settings file you load must have exactly the same set of parameters as is defined in the code.  You must recompile `sim` if you add or remove a parameter. You can save and load the parameters at any time, but note that the `use_spring_damper` setting will not take effect unless you restart the simulator.
+左面板允许你调整仿真器配置，最常用的设置是 `simulation_speed`。默认设置是仿真器启动时从 `simulator-defaults.yaml`加载的。这个配置文件的结构一定不能动。如果增删了参数，你必须重新编译 `sim` 。任意时间你都可以保存和加载这些参数，除了 `use_spring_damper` 这个参数必须重启仿真器才会生效。
 
-The center panel allows you to change robot settings which are not specific to the controller.  Defaults are loaded `mini-cheetah-defatuls.yaml` when Mini Cheetah is selected and you click "Start".  If you stop and start the simulator, the file will be reloaded.  The settings file you load must have exactly the same set of parameters as is defined in the code.  You must recompile `sim` if you add or remove a parameter.  Currently most of these parameters do nothing and many will be removed. The most useful setting is `cheater_mode`, which sends the robot code the current position/orientation/velocity of the robot, and `controller_dt`, which changes how frequently the control code runs. (The `controller_dt` setting still needs to be tested).
+中央面板允许你调整机器人配置（不由Controller指定）。默认值当仿真器启动时从`mini-cheetah-defatuls.yaml`加载，重启仿真器时也会重新加载默认配置。这个配置文件的结构一定不能动。如果增删了参数，你必须重新编译 `sim` 。当前很多配置并没有用，将来也会被去除。最常用的配置是
+-   `cheater_mode`，这用于发送机器人当前的代码、位置、航向、速度, 
+-   `controller_dt`, 用于改变控制代码的执行频率，（本项配置还需要更多的测试验证）
 
-The right panel allows you to change parameters which are specific to your controller, called "User Parameters".  If your control code does not use user parameters, it will be ignored.  If your code does use user parameters, then you must load user configuration parameters that match the parameters your code is expecting, or your controller will not start.
-
-
-To start the robot control code, run `user/MIT_Controller/mit_ctrl m s`.  The `m` argument is for mini-cheetah, and the `s` indicates it should connect to the simulator. This uses shared memory to communicate with the simulator. The simulator should start running, and the robot should move to a ready position.  In the center column of the simulator window, set control mode to 10.  Once the robot has stopped moving, set control mode 1.  Then, set control mode to 4, and the robot will start trotting.
-
-You can use the joysticks to drive the robot around.  You will see two robots - the gray one is the actual robot position from the simulation, and the red one is the estimate of the robot's position from our state estimator.  Turning on "cheater_mode" will make the estimated position equal to the actual position.  To adjust the simulation view, you can click and drag on the screen and scroll. Press and hold `t` to make the simulation run as fast as possible.  Press the spacebar to turn on free camera mode.  You can use the w,a,s,d,r,f keys to move the camera around, and click and drag to adjust the orientation.
+右面板允许你调整称为“User Parameters”的运动控制参数。如果你的控制代码不涉及控制参数，控制参数将被忽略。如果你的控制代码涉及控制参数，你必须加载“User Parameters”，否则你的controller将不会启动。
 
 
-# LCM
-We use LCM (https://lcm-proj.github.io/) to connect the control interface to the actual mini cheetah hardware, and also as a debugging tool when running the simulator.  The `make_types.sh` script runs an LCM tool to generate C++ header files for the LCM data types.  When the simulator is running, you can run `scripts/launch_lcm_spy.sh` to open the LCM spy utility, which shows detailed information from the simulator and controller.  You can click on data streams to plot them, which is nice for debugging.  There is also a tool called `lcm-logger` which can save LCM data to a file.
+运行机器人控制代码需要执行 `user/MIT_Controller/mit_ctrl m s`，其中参数 `m` 表示mini-cheetah， `s` 表示需要连接到仿真器。这种使用方式用到共享内存技术，以实现与仿真器通讯。仿真器需要已经开始运行，机器人需要移动到一个可行的位置。在仿真器窗口中央列，设置控制模式（control mode）为10。一旦机器人停止运动，设置控制模式为1，然后设置为4，机器人将会开始Trotting。
+
+你可以使用手柄控制机器人运动。你会看到两个机器人，灰色的是仿真出来的实际位置，红色的被状态估计器预估出来的位置。开启 "cheater_mode" 会使红色和灰色机器人的位置一致。可以拖动滚动窗口；按住 `t` 可以加速仿真执行；按住空格键可以开启自由相机模式，通过 w,a,s,d,r,f 键移动相机, 鼠标拖动调整方向。
+
+
+# Lightweight Communications and Marshalling
+我们使用 LCM (https://lcm-proj.github.io/) 连接控制接口和实际的mini cheetah 硬件，也是在仿真时的调试工具。`make_types.sh` 脚本运行LCM工具生成包含LCM数据类型的C++头文件，当仿真器运行时，你可以运行 `scripts/launch_lcm_spy.sh` 去打开LCM工具，它会显示仿真器和控制器详细的信息，你可以点击数据流并图表化，这是非常Nice的调试方式。还有一个叫`lcm-logger` 的可以可在LCM数据到文件。
 
 
 # Writing a Robot Controller

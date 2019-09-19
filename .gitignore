@@ -26,3 +26,5 @@ documentation/doxygen/latex
 documentation/doxygen/html
 
 iDoxy/
+
+*.chm
